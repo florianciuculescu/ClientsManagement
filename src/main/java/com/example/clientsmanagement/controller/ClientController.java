@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,12 +33,13 @@ public class ClientController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO, BindingResult bindingResult) {
+    public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO, BindingResult bindingResult)
+            throws ExecutionException, InterruptedException {
         validateBindingResults(bindingResult);
-        System.out.println("in controller --> " + Thread.currentThread().getName());
-        ClientDTO savedClient = clientService.save(clientDTO);
-        System.out.println("(controller)end of the process -- > " + Thread.currentThread().getName());
-        return new ResponseEntity<>(savedClient, HttpStatus.OK);
+        System.out.println("initiating controller method-->" + Thread.currentThread().getName());
+        ClientDTO client = clientService.save(clientDTO);
+        System.out.println("process finished-->" + Thread.currentThread().getName());
+        return new ResponseEntity<>(client, HttpStatus.OK);
     }
 
     @PutMapping("/update")
@@ -48,9 +51,7 @@ public class ClientController {
 
     @GetMapping("/clients")
     public ResponseEntity<List<Client>> getAllClients() {
-
         List<Client> clients = clientService.findAll();
-
         return new ResponseEntity<>(clients, HttpStatus.OK);
     }
 
