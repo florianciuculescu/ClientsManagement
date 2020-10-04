@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.example.clientsmanagement.util.LoggingUtil.*;
+
 @RestController
 @RequestMapping("/client")
 public class ClientController {
@@ -36,21 +38,23 @@ public class ClientController {
     public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO, BindingResult bindingResult)
             throws ExecutionException, InterruptedException {
         validateBindingResults(bindingResult);
-        System.out.println("initiating controller method-->" + Thread.currentThread().getName());
+        logInfo(serviceName,"request to create client with cnp: " + clientDTO.getCnp());
         ClientDTO client = clientService.save(clientDTO);
-        System.out.println("process finished-->" + Thread.currentThread().getName());
+        logInfo(serviceName,"client with cnp: " + clientDTO.getCnp() + " has been successfully created");
         return new ResponseEntity<>(client, HttpStatus.OK);
     }
 
     @PutMapping("/update")
     public ResponseEntity<Void> updateClient(@Valid @RequestBody ClientDTO clientDTO, BindingResult bindingResult) {
         validateBindingResults(bindingResult);
+        logInfo(serviceName,"request to update client with cnp: " + clientDTO.getCnp());
         boolean result = clientService.updateUser(clientDTO);
         return result ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/clients")
     public ResponseEntity<List<Client>> getAllClients() {
+        logInfo(serviceName, "request to get all clients");
         List<Client> clients = clientService.findAll();
         return new ResponseEntity<>(clients, HttpStatus.OK);
     }

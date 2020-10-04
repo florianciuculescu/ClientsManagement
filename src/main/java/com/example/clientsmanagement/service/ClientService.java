@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static com.example.clientsmanagement.util.LoggingUtil.*;
+
 @Service
 public class ClientService {
 
@@ -24,23 +26,19 @@ public class ClientService {
     }
 
     public ClientDTO save(ClientDTO clientDTO) throws ExecutionException, InterruptedException {
-        System.out.println("in service --> " + Thread.currentThread().getName());
 
         Future<Client> futureClient = asyncService.processAsyncSave(clientDTO);
 
         while (true) {
             if (futureClient.isDone()) {
-                System.out.println("futureClient is Done --> " + Thread.currentThread().getName());
+                logInfo(serviceName,"future task completed");
                 return ClientDTO.from(futureClient.get());
             }
         }
     }
 
-    public List<Client> findAll() {
-        return clientRepository.findAll();
-    }
-
     public boolean updateUser(ClientDTO clientDTO) {
+
         Optional<Client> optionalClient = clientRepository.findByCnp(clientDTO.getCnp());
 
         if (optionalClient.isPresent()) {
@@ -49,8 +47,14 @@ public class ClientService {
             clientToEdit.setLastName(clientDTO.getLastName());
             clientToEdit.setEmail(clientDTO.getEmail());
             clientRepository.save(clientToEdit);
+            logInfo(serviceName,"client with cnp: " + clientDTO.getCnp() + " has been successfully updated");
             return true;
         }
+        logDebug(serviceName,"cnp: " + clientDTO.getCnp() + " cannot be found");
         return false;
+    }
+
+    public List<Client> findAll() {
+        return clientRepository.findAll();
     }
 }

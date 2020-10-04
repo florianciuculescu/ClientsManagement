@@ -10,24 +10,26 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Future;
+import static com.example.clientsmanagement.util.LoggingUtil.*;
 
 @Service
 public class AsyncService {
 
     private final ClientRepository clientRepository;
+    private final String serviceName;
 
     public AsyncService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
+        this.serviceName = this.getClass().getName();
     }
 
     @Async
-    public Future<Client> processAsyncSave(ClientDTO clientDTO) throws InterruptedException {
-        Thread.sleep(5000);
-        System.out.println("processingAsyncMethod-->" + Thread.currentThread().getName());
+    public Future<Client> processAsyncSave(ClientDTO clientDTO)  {
         try {
             Client client = clientRepository.save(ClientDTO.to(clientDTO));
             return new AsyncResult<>(client);
         } catch (DataIntegrityViolationException ex) {
+            logDebug(serviceName,ex.getMessage());
             throw new DatabaseViolationExeption("Entity already saved in database");
         }
     }
